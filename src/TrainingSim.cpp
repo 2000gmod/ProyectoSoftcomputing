@@ -26,10 +26,18 @@ FP TrainingSim::DoDronePerformanceSimulation(Drone& drone) {
 
     FP penaltyScore = 0.0;
     for (int i = 0; i < SimulationsPerDrone; i++) {
+        sim.Reset();
         Vec2 target {RandomFP(-TrainingMaxCoords, TrainingMaxCoords), RandomFP(-TrainingMaxCoords, TrainingMaxCoords)};
         //Vec2 target;
 
-        FP timeLimit = target.Mag2() / PhysicsSimTargetDroneSpeed;
+        FP timeLimit = target.Mag2() / PhysicsSimTargetDroneSpeed + 1.5;
+
+        if constexpr (TrainingUseRandomInitConditions) {
+            drone.AngularVelocity = RandomFP(-1, 1);
+            drone.Velocity.x = RandomFP(-1, 1);
+            drone.Velocity.y = RandomFP(-1, 1);
+            drone.DirectionAngle = RandomFP(-1, 1);
+        }
 
         for (FP t = 0.0; t < timeLimit; t += PhysicsSimDeltaT) {
             sim.NetworkControlStep(target, PhysicsSimDeltaT);

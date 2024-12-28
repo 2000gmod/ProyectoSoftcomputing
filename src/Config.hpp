@@ -36,6 +36,8 @@ constexpr FP TrainingNetworkWeightPenalty = 0.05;
 
 constexpr FP TrainingMaxCoords = 4.0;
 
+constexpr bool TrainingUseRandomInitConditions = false;
+
 constexpr const char* CheckpointFileName = "checkpoint.gen";
 
 

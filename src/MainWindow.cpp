@@ -199,9 +199,9 @@ bool MainWindow::TrainingUpdate() {
     DrawString({10, 70}, std::format("Using {} threads for training.", SimulationThreads));
     DrawString({10, 80}, std::format("Took {}", duration));
 
-    DrawString({10, 100}, std::format("Average training loss: {:5.5f}.", avgPenalty));
-    DrawString({10, 110}, std::format("Best drone loss score: {:5.5f}.", Training.Drones[0].TrainingScore));
-    DrawString({10, 150}, std::format("Best drone so far: {:5.5f}.", BestDroneSoFar.TrainingScore));
+    DrawString({10, 100}, std::format("Average training loss: {: 5.3f}.", avgPenalty));
+    DrawString({10, 110}, std::format("Best drone loss score: {: 5.3f}.", Training.Drones[0].TrainingScore));
+    DrawString({10, 150}, std::format("Best drone so far: {: 5.3f}.", BestDroneSoFar.TrainingScore));
 
     DrawString({10, 200}, "Press [S] to save current generation to checkpoint file.");
     DrawString({10, 210}, "Press [L] to load checkpoint file.");
