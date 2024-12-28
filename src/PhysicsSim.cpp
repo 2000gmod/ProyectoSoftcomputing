@@ -33,12 +33,37 @@ void PhysicsSim::DoSimulationStep(FP deltaT) {
     SimDrone->DirectionAngle = std::fmod(SimDrone->DirectionAngle, 2.0 * std::numbers::pi);
 }
 
-void PhysicsSim::ManualControlStep(FP left, FP right) {
-    RequestedThrust[0] = std::clamp(left, 0.0, 1.0);
-    RequestedThrust[1] = std::clamp(right, 0.0, 1.0);
+void PhysicsSim::ManualControlStep(FP left, FP right, FP deltaT) {
+    //RequestedThrust[0] = std::clamp(left, 0.0, 1.0);
+    //RequestedThrust[1] = std::clamp(right, 0.0, 1.0);
+
+    left = std::clamp(left, 0.0, 1.0);
+    right = std::clamp(right, 0.0, 1.0);
+
+    FP thrustChange = DroneThrustChangeSpeed * deltaT;
+
+    if (left > RequestedThrust[0] + thrustChange) {
+        RequestedThrust[0] += thrustChange;
+    }
+    else if (left < RequestedThrust[0] - thrustChange) {
+        RequestedThrust[0] -= thrustChange;
+    }
+    else {
+        RequestedThrust[0] = left;
+    }
+
+    if (right > RequestedThrust[1] + thrustChange) {
+        RequestedThrust[1] += thrustChange;
+    }
+    else if (right < RequestedThrust[1] - thrustChange) {
+        RequestedThrust[1] -= thrustChange;
+    }
+    else {
+        RequestedThrust[1] = right;
+    }
 }
 
-void PhysicsSim::NetworkControlStep(const Vec2& target) {
+void PhysicsSim::NetworkControlStep(const Vec2& target, FP deltaT) {
     auto difX = SimDrone->Position.x - target.x;
     auto difY = SimDrone->Position.y - target.y;
     auto velX = SimDrone->Velocity.x;
@@ -48,7 +73,7 @@ void PhysicsSim::NetworkControlStep(const Vec2& target) {
     auto cosAng = std::cos(SimDrone->DirectionAngle);
 
     auto thrusters = SimDrone->Brain.EvaluateNetwork({difX, difY, velX, velY, angVel, sinAng, cosAng});
-    ManualControlStep(thrusters[0], thrusters[1]);
+    ManualControlStep(thrusters[0], thrusters[1], deltaT);
 }
 
 void PhysicsSim::Reset() {

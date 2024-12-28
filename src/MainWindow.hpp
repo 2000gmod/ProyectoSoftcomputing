@@ -18,6 +18,7 @@ class MainWindow : public olc::PixelGameEngine {
         AppState State = AppState::Menu;
         Drone DefaultDrone;
         Drone BestDroneSoFar;
+        bool TrainingPaused = true;
 
     public:
         PhysicsSim Sim;

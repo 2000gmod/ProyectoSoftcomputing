@@ -8,14 +8,15 @@ constexpr unsigned int Hidden1Size = 10;
 constexpr unsigned int Hidden2Size = 5;
 constexpr unsigned int OutputSize = 2;
 
-constexpr FP PhysicsSimDeltaT = 1.0 / 120.0;
-constexpr FP PhysicsSimTimeSeconds = 10.0;
+constexpr FP PhysicsSimDeltaT = 1.0 / 60.0;
+constexpr FP PhysicsSimTargetDroneSpeed = 1.5;
 
 constexpr Vec2 Gravity = {0.0, -10.0};
 constexpr FP DroneMass = 10.0;
 constexpr FP DroneMomentOfInertia = 5.0;
 constexpr FP DroneThrust = 35.0;
 constexpr FP DroneTorqueMultiplier = 60.0;
+constexpr FP DroneThrustChangeSpeed = 8;
 
 constexpr FP DroneWidth = 0.5;
 constexpr FP DroneHeight = 0.25;

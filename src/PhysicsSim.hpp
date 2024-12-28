@@ -11,8 +11,8 @@ struct PhysicsSim {
 
     void DoSimulationStep(FP deltaT);
 
-    void ManualControlStep(FP left, FP right);
-    void NetworkControlStep(const Vec2& target);
+    void ManualControlStep(FP left, FP right, FP deltaT);
+    void NetworkControlStep(const Vec2& target, FP deltaT);
 
     void Reset();
 };

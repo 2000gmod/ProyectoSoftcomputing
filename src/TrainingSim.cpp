@@ -29,10 +29,10 @@ FP TrainingSim::DoDronePerformanceSimulation(Drone& drone) {
         Vec2 target {RandomFP(-TrainingMaxCoords, TrainingMaxCoords), RandomFP(-TrainingMaxCoords, TrainingMaxCoords)};
         //Vec2 target;
 
-        FP timeLimit = target.Mag2() / 1.5;
+        FP timeLimit = target.Mag2() / PhysicsSimTargetDroneSpeed;
 
         for (FP t = 0.0; t < timeLimit; t += PhysicsSimDeltaT) {
-            sim.NetworkControlStep(target);
+            sim.NetworkControlStep(target, PhysicsSimDeltaT);
             sim.DoSimulationStep(PhysicsSimDeltaT);
         }
 

@@ -120,7 +120,7 @@ bool MainWindow::ManualControlUpdate(float dt) {
     DrawDrone(*Sim.SimDrone, Sim.RequestedThrust);
     DrawDroneInfoBox();
 
-    Sim.ManualControlStep(GetKey(olc::LEFT).bHeld ? 1.0 : 0.0, GetKey(olc::RIGHT).bHeld ? 1.0 : 0.0);
+    Sim.ManualControlStep(GetKey(olc::LEFT).bHeld ? 1.0 : 0.0, GetKey(olc::RIGHT).bHeld ? 1.0 : 0.0, dt);
     
     Sim.DoSimulationStep(dt);
     return true;
@@ -151,13 +151,13 @@ bool MainWindow::AutomaticControlUpdate(float dt) {
     DrawLine(WorldToScreen(Sim.SimDrone->Position), GetMousePos(), olc::PixelF(1.0f, 0.0f, 0.0f, 0.5f), 0xF0F0F0F0);
 
     FillCircle(GetMousePos(), 5, olc::YELLOW);
-    DrawString(GetMousePos() + olc::vi2d {10, -10}, std::format("Target\nx:{:.2f}\ny:{:.2f}", worldMouse.x, worldMouse.y), olc::YELLOW);
+    DrawString(GetMousePos() + olc::vi2d {10, -10}, std::format("Target\nx:{: .2f}\ny:{: .2f}", worldMouse.x, worldMouse.y), olc::YELLOW);
     
     DrawDrone(*Sim.SimDrone, Sim.RequestedThrust);
     
     DrawDroneInfoBox();
 
-    Sim.NetworkControlStep(worldMouse);
+    Sim.NetworkControlStep(worldMouse, dt);
     
     Sim.DoSimulationStep(dt);
     return true;
@@ -173,6 +173,10 @@ bool MainWindow::TrainingUpdate() {
         Training = TrainingSim();
     }
 
+    if (GetKey(olc::P).bPressed) {
+        TrainingPaused = !TrainingPaused;
+    }
+
     if (GetKey(olc::S).bPressed) {
         Training.SaveToFile();
     }
@@ -181,12 +185,12 @@ bool MainWindow::TrainingUpdate() {
         Training.LoadFromFile();
     }
 
-    DrawString({10, 10}, "Hold [ESC] to exit.\nHold [R] to restart training.");
+    DrawString({10, 10}, "Hold [ESC] to exit.\nHold [R] to restart training.\nHold [P] to pause/resume training.");
 
     FP avgPenalty = 0.0;
 
     auto duration = ll::TimeFunc([this, &avgPenalty] {
-        avgPenalty = Training.TrainGeneration();
+        if (!TrainingPaused) avgPenalty = Training.TrainGeneration();
     });
 
     if (Training.Drones[0].TrainingScore < BestDroneSoFar.TrainingScore) BestDroneSoFar = Training.Drones[0];
@@ -195,12 +199,14 @@ bool MainWindow::TrainingUpdate() {
     DrawString({10, 70}, std::format("Using {} threads for training.", SimulationThreads));
     DrawString({10, 80}, std::format("Took {}", duration));
 
-    DrawString({10, 100}, std::format("Average training loss: {:.5f}.", avgPenalty));
-    DrawString({10, 110}, std::format("Best drone loss score: {:.5f}.", Training.Drones[0].TrainingScore));
-    DrawString({10, 150}, std::format("Best drone so far: {:.5f}.", BestDroneSoFar.TrainingScore));
+    DrawString({10, 100}, std::format("Average training loss: {:5.5f}.", avgPenalty));
+    DrawString({10, 110}, std::format("Best drone loss score: {:5.5f}.", Training.Drones[0].TrainingScore));
+    DrawString({10, 150}, std::format("Best drone so far: {:5.5f}.", BestDroneSoFar.TrainingScore));
 
     DrawString({10, 200}, "Press [S] to save current generation to checkpoint file.");
     DrawString({10, 210}, "Press [L] to load checkpoint file.");
+
+    if (TrainingPaused) DrawString({10, 250}, "Training paused.", olc::RED, 2);
 
     Sim.SimDrone = &Training.Drones[0];
     
@@ -344,10 +350,10 @@ void MainWindow::DrawDroneInfoBox() {
     constexpr auto textFormat = R"(
     DRONE INFO
 
-    Position: ({:.1f}, {:.1f})
-    Velocity: ({:.1f}, {:.1f})
-    Angle: {:.1f}
-    Angular Velocity: {:.1f}
+    Position: ({: .2f}, {: .2f})
+    Velocity: ({: .2f}, {: .2f})
+    Angle: {: 06.1f}
+    Angular Velocity: {: 06.1f}
     )";
 
     const Drone& drone = *Sim.SimDrone;
@@ -357,7 +363,7 @@ void MainWindow::DrawDroneInfoBox() {
         drone.Position.x, drone.Position.y,
         drone.Velocity.x, drone.Velocity.y,
         drone.DirectionAngle * 180 / std::numbers::pi,
-        drone.AngularVelocity
+        drone.AngularVelocity * 180 / std::numbers::pi
     );
 
     DrawString(topLeft + olc::vi2d {-20, 10}, text);
