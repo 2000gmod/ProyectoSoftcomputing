@@ -8,7 +8,7 @@
 #include <format>
 
 bool MainWindow::OnUserCreate() {
-    sAppName = "SCP";
+    sAppName = "Drone Training Program";
     Sim.SimDrone = &DefaultDrone;
     SetPixelMode(olc::Pixel::ALPHA);
     return true;
@@ -19,7 +19,7 @@ bool MainWindow::OnUserUpdate(float dt) {
     switch (State) {
         using enum AppState;
         case Menu:
-            return MenuUpdate();
+            return MenuUpdate(dt);
         case ManualControl:
             return ManualControlUpdate(dt);
         case AutoControl:
@@ -43,14 +43,16 @@ bool MainWindow::BadStateUpdate() {
     return true;
 }
 
-bool MainWindow::MenuUpdate() {
+bool MainWindow::MenuUpdate(float dt) {
+    DrawMainMenuBackground(dt);
+
     DrawCopyright();
     
-    DrawString({10, 10}, "Drone training program");
-    DrawString({10, 20}, "Main menu");
+    DrawString({10, 10}, "Drone training program", olc::YELLOW, 3);
+    DrawString({10, 40}, "Main menu");
 
     auto menuText = R"(
-        - [1]   Manually fly loaded drone.
+        - [1]   Fly drone manually.
         - [2]   Automatically fly loaded drone.
         - [3]   Go to training mode.
 
@@ -62,7 +64,7 @@ bool MainWindow::MenuUpdate() {
         - [ESC] Exit program.
     )";
 
-    DrawString({-50, 70}, menuText);
+    DrawString({-50, 90}, menuText);
 
     if (GetKey(olc::ESCAPE).bPressed) {
         return false;
@@ -70,10 +72,14 @@ bool MainWindow::MenuUpdate() {
 
     else if (GetKey(olc::K1).bPressed) {
         if (Sim.SimDrone != nullptr) Sim.Reset();
+        CameraZoom = 0.25;
+        CameraFollowDrone = false;
         State = AppState::ManualControl;
     }
     else if (GetKey(olc::K2).bPressed) {
         if (Sim.SimDrone != nullptr) Sim.Reset();
+        CameraZoom = 0.25;
+        CameraFollowDrone = false;
         State = AppState::AutoControl;
     }
     else if (GetKey(olc::K3).bPressed) {
@@ -104,6 +110,8 @@ bool MainWindow::ManualControlUpdate(float dt) {
         return true;
     }
 
+    CameraUpdate();
+
     DrawGrid();
 
     DrawString({10, 10}, "Press [ESC] to exit.\nPress [R] to reset.\nUse [LEFT] and [RIGHT] to control drone.");
@@ -131,6 +139,8 @@ bool MainWindow::AutomaticControlUpdate(float dt) {
         State = AppState::Menu;
         return true;
     }
+
+    CameraUpdate();
 
     DrawGrid();
 
@@ -183,6 +193,7 @@ bool MainWindow::TrainingUpdate() {
 
     if (GetKey(olc::L).bPressed) {
         Training.LoadFromFile();
+        BestDroneSoFar = Training.Drones[0];
     }
 
     DrawString({10, 10}, "Hold [ESC] to exit.\nHold [R] to restart training.\nHold [P] to pause/resume training.");
@@ -235,9 +246,26 @@ void MainWindow::DrawDrone(const Drone& drone, const std::array<FP, 2>& thrust) 
 
     DrawTriangle(WorldToScreen(mainBox[0]), WorldToScreen(mainBox[3]), WorldToScreen(mainBox[4]));
 
+    if (State == AppState::AutoControl) {
+
+        olc::Pixel trainingBoxColor = {255, 255, 0, 128};
+
+        Vec2 trcorners[] = {
+            {TrainingMaxCoords, TrainingMaxCoords},
+            {TrainingMaxCoords, -TrainingMaxCoords},
+            {-TrainingMaxCoords, -TrainingMaxCoords},
+            {-TrainingMaxCoords, TrainingMaxCoords},
+        };
+        
+        DrawLine(WorldToScreen(drone.Position + trcorners[0]), WorldToScreen(drone.Position + trcorners[1]), trainingBoxColor);
+        DrawLine(WorldToScreen(drone.Position + trcorners[1]), WorldToScreen(drone.Position + trcorners[2]), trainingBoxColor);
+        DrawLine(WorldToScreen(drone.Position + trcorners[2]), WorldToScreen(drone.Position + trcorners[3]), trainingBoxColor);
+        DrawLine(WorldToScreen(drone.Position + trcorners[3]), WorldToScreen(drone.Position + trcorners[0]), trainingBoxColor);
+
+    }
+
     if (thrust[0] <= 0.001 && thrust[1] <= 0.01) return;
 
-    auto flameSize = 0.25;
     auto flameWidthMult = 0.25;
 
     Vec2 leftThruster[] = {
@@ -270,7 +298,7 @@ void MainWindow::DrawDrone(const Drone& drone, const std::array<FP, 2>& thrust) 
 }
 
 olc::vi2d MainWindow::WorldToScreen(const Vec2& pos) {
-    Vec2 newpos = pos + CameraPos;
+    Vec2 newpos = pos - CameraPos;
     newpos = newpos * CameraZoom;
 
     auto screenSize = GetScreenSize();
@@ -301,7 +329,7 @@ Vec2 MainWindow::ScreenToWorld(const olc::vi2d& pos) {
     newpos.x *= aspectRatio;
 
     newpos = newpos / CameraZoom;
-    return newpos - CameraPos;
+    return newpos + CameraPos;
 }
 
 void MainWindow::DrawCopyright() {
@@ -367,4 +395,85 @@ void MainWindow::DrawDroneInfoBox() {
     );
 
     DrawString(topLeft + olc::vi2d {-20, 10}, text);
+}
+
+void MainWindow::CameraUpdate() {
+    if (GetKey(olc::L).bPressed) {
+        CameraZoom *= 2;
+    }
+
+    if (GetKey(olc::K).bPressed) {
+        CameraZoom /= 2;
+    }
+
+    if (GetKey(olc::F1).bPressed) {
+        CameraPos = {0, 0};
+    }
+
+    if (GetKey(olc::V).bPressed) {
+        CameraFollowDrone = !CameraFollowDrone;
+    }
+
+
+    if (CameraFollowDrone) {
+        CameraPos = Sim.SimDrone->Position;
+    }
+}
+
+void MainWindow::DrawMainMenuBackground(float dt) {
+    MenuBackgroundAngle += 0.65 * dt;
+    const auto halfheight = DroneHeight * 2.0;
+    const auto halfwidth = DroneWidth * 2.0;
+
+    Vec2 positionOffset = {3.8, 0.0};
+
+    Vec2 mainBox[] = {
+        {halfwidth, halfheight},
+        {halfwidth, -halfheight},
+        {-halfwidth, -halfheight},
+        {-halfwidth, halfheight},
+        {0.0, 2 * halfheight},
+    };
+
+    for (auto& i : mainBox) {
+        i = i.Rotated(MenuBackgroundAngle);
+        i += positionOffset;
+    }
+
+    DrawTriangle(WorldToScreen(mainBox[0]), WorldToScreen(mainBox[1]), WorldToScreen(mainBox[2]));
+    DrawTriangle(WorldToScreen(mainBox[3]), WorldToScreen(mainBox[0]), WorldToScreen(mainBox[2]));
+
+    DrawTriangle(WorldToScreen(mainBox[0]), WorldToScreen(mainBox[3]), WorldToScreen(mainBox[4]));
+
+    auto flameWidthMult = 0.25;
+    auto freq1 = 16.72;
+    auto freq2 = 18.23;
+
+    Vec2 leftThruster[] = {
+        {-halfwidth, -halfheight},
+        {-halfwidth * flameWidthMult, -halfheight},
+        {-halfwidth * (1 + flameWidthMult) / 2.0, -halfheight - 0.25 * std::abs(0.25 + std::sin(MenuBackgroundAngle * freq1))}
+    };
+
+    Vec2 rightThruster[] = {
+        {halfwidth, -halfheight},
+        {halfwidth * flameWidthMult, -halfheight},
+        {halfwidth * (1 + flameWidthMult) / 2.0, -halfheight - 0.25 * std::abs(0.25 + std::cos(MenuBackgroundAngle * freq2))}
+    };
+
+
+    for (auto& i : leftThruster) {
+        i = i.Rotated(MenuBackgroundAngle);
+        i += positionOffset;
+    }
+
+    for (auto& i : rightThruster) {
+        i = i.Rotated(MenuBackgroundAngle);
+        i += positionOffset;
+    }
+
+    auto color = olc::Pixel(0xFF, 0xA5, 0x00);
+
+    DrawTriangle(WorldToScreen(leftThruster[0]), WorldToScreen(leftThruster[1]), WorldToScreen(leftThruster[2]), color);
+    DrawTriangle(WorldToScreen(rightThruster[0]), WorldToScreen(rightThruster[1]), WorldToScreen(rightThruster[2]), color);
 }

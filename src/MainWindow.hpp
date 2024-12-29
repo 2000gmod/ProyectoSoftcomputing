@@ -19,19 +19,23 @@ class MainWindow : public olc::PixelGameEngine {
         Drone DefaultDrone;
         Drone BestDroneSoFar;
         bool TrainingPaused = true;
-
-    public:
+        bool CameraFollowDrone = false;
         PhysicsSim Sim;
         TrainingSim Training;
 
-        const Vec2 CameraPos = {0.0, 0.0};
-        const float CameraZoom = 0.25;
+        Vec2 CameraPos = {0.0, 0.0};
+        float CameraZoom = 0.25;
+
+        float MenuBackgroundAngle = 0;
+
+    public:
 
         bool OnUserCreate() override;
         bool OnUserUpdate(float) override;
 
+    private:
         bool BadStateUpdate();
-        bool MenuUpdate();
+        bool MenuUpdate(float);
         bool ManualControlUpdate(float);
         bool AutomaticControlUpdate(float);
         bool TrainingUpdate();
@@ -43,5 +47,9 @@ class MainWindow : public olc::PixelGameEngine {
         void DrawCopyright();
         void DrawGrid();
         void DrawDroneInfoBox();
+
+        void CameraUpdate();
+
+        void DrawMainMenuBackground(float dt);
         
 };

@@ -16,7 +16,7 @@
 TrainingSim::TrainingSim() {
     Drones.reserve(GenerationSize);
 
-    for (int i = 0; i < GenerationSize; i++) {
+    for (int i = 0; i < (int) GenerationSize; i++) {
         Drones.emplace_back();
     }
 }
@@ -25,7 +25,7 @@ FP TrainingSim::DoDronePerformanceSimulation(Drone& drone) {
     PhysicsSim sim(drone);
 
     FP penaltyScore = 0.0;
-    for (int i = 0; i < SimulationsPerDrone; i++) {
+    for (int i = 0; i < (int) SimulationsPerDrone; i++) {
         sim.Reset();
         Vec2 target {RandomFP(-TrainingMaxCoords, TrainingMaxCoords), RandomFP(-TrainingMaxCoords, TrainingMaxCoords)};
         //Vec2 target;
@@ -71,7 +71,7 @@ FP TrainingSim::TrainGeneration() {
         }
     };
 
-    for (int i = 0; i < SimulationThreads; i++) {
+    for (int i = 0; i < (int) SimulationThreads; i++) {
         pool.Submit(worker, dronesPerThread, i * dronesPerThread);
     }
     pool.WaitUntilEmpty();

@@ -15,6 +15,8 @@ struct Drone {
 
     Drone() = default;
     Drone(const ControlNetwork& init) : Brain(init) { }
+    Drone(const Drone& other) : Brain(other.Brain), TrainingScore(other.TrainingScore) { }
+    
     Drone& operator = (const Drone& other) {
         Brain = other.Brain;
         TrainingScore = other.TrainingScore;

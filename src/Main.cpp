@@ -5,11 +5,15 @@
 #include "MainWindow.hpp"
 
 
-int main(int argc, char* argv[]) {
+int main() {
     srand(time(nullptr));
+
+    int pixSize = 2;
+    int width = 1600;
+    int height = 900;
     
     MainWindow window;
-    if (window.Construct(650, 400, 2, 2, false, true, false)) {
+    if (window.Construct(width / pixSize, height / pixSize, pixSize, pixSize, false, true, false)) {
         window.Start();
     }
 }

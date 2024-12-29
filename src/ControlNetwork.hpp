@@ -26,6 +26,8 @@ class ControlNetwork {
         ControlNetwork(InitMode mode = InitMode::Random);
         ControlNetwork(const ControlNetwork& other);
 
+        ControlNetwork& operator =(const ControlNetwork& other);
+
         std::array<FP, OutputSize> EvaluateNetwork(const std::array<FP, InputSize>& input);
 
         static ControlNetwork GenerateChild(FP mRate, const ControlNetwork& a, const ControlNetwork& b);

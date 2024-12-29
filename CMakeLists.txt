@@ -7,7 +7,10 @@ project(scp)
 add_subdirectory(src/olc)
 add_subdirectory(src/threadpool)
 
-add_compile_options(-march=native -O3)
+add_compile_options(-march=native)
+add_compile_options(-Wall -Wextra)
+
+add_compile_options()
 add_link_options()
 
 set(SOURCES

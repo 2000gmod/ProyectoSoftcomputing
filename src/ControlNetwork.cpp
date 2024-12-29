@@ -10,13 +10,13 @@ static FP ReLU(FP x) {
     return x;
 }
 
-static FP Sigmoid(FP x) {
+/*static FP Sigmoid(FP x) {
     return 1.0 / (1.0 + std::exp(-x));
 }
 
 static FP Act3(FP x) {
     return std::cbrt(x);
-}
+}*/
 
 static const auto ActivationFunc = ReLU;
 
@@ -45,6 +45,17 @@ ControlNetwork::ControlNetwork(const ControlNetwork& other) {
     std::memcpy(&InToH1Weights[0][0], begin, sizeof(FP) * (afterLast - begin));*/
 }
 
+ControlNetwork& ControlNetwork::operator =(const ControlNetwork& other) {
+    InToH1Weights = other.InToH1Weights;
+    H1ToH2Weights = other.H1ToH2Weights;
+    H2ToOutWeights = other.H2ToOutWeights;
+
+    H1Biases = other.H1Biases;
+    H2Biases = other.H2Biases;
+    OutBiases = other.OutBiases;
+    return *this;
+}
+
 void ControlNetwork::InitZeroes() {
     InToH1Weights.fill({0});
     H1ToH2Weights.fill({0});
@@ -70,9 +81,9 @@ void ControlNetwork::InitRandom() {
 std::array<FP, OutputSize> ControlNetwork::EvaluateNetwork(const std::array<FP, InputSize>& input) {
     std::array<FP, Hidden1Size> h1activations;
 
-    for (int i = 0; i < Hidden1Size; i++) {
+    for (int i = 0; i < (int) Hidden1Size; i++) {
         FP sum = 0;
-        for (int j = 0; j < InputSize; j++) {
+        for (int j = 0; j < (int) InputSize; j++) {
             sum += input[j] * InToH1Weights[i][j] + H1Biases[i];
         }
         h1activations[i] = ActivationFunc(sum);
@@ -80,9 +91,9 @@ std::array<FP, OutputSize> ControlNetwork::EvaluateNetwork(const std::array<FP, 
 
     std::array<FP, Hidden2Size> h2Activations;
 
-    for (int i = 0; i < Hidden2Size; i++) {
+    for (int i = 0; i < (int) Hidden2Size; i++) {
         FP sum = 0;
-        for (int j = 0; j < Hidden1Size; j++) {
+        for (int j = 0; j < (int) Hidden1Size; j++) {
             sum += h1activations[j] * H1ToH2Weights[i][j] + H2Biases[i];
         }
         h2Activations[i] = ActivationFunc(sum);
@@ -90,9 +101,9 @@ std::array<FP, OutputSize> ControlNetwork::EvaluateNetwork(const std::array<FP, 
 
     std::array<FP, OutputSize> outActivations;
 
-    for (int i = 0; i < OutputSize; i++) {
+    for (int i = 0; i < (int) OutputSize; i++) {
         FP sum = 0;
-        for (int j = 0; j < Hidden2Size; j++) {
+        for (int j = 0; j < (int) Hidden2Size; j++) {
             sum += h2Activations[j] * H2ToOutWeights[i][j] + OutBiases[i];
         }
         outActivations[i] = ActivationFunc(sum);
@@ -110,43 +121,43 @@ ControlNetwork ControlNetwork::GenerateChild(FP mRate, const ControlNetwork& a, 
 
     ControlNetwork out(InitMode::Zeroes);
 
-    for (int i = 0; i < Hidden1Size; i++) {
-        for (int j = 0; j < InputSize; j++) {
+    for (int i = 0; i < (int) Hidden1Size; i++) {
+        for (int j = 0; j < (int) InputSize; j++) {
             auto value = (a.InToH1Weights[i][j] + b.InToH1Weights[i][j]) / 2;
             //value += dist(gen);
             out.InToH1Weights[i][j] = value;
         }
     }
 
-    for (int i = 0; i < Hidden2Size; i++) {
-        for (int j = 0; j < Hidden1Size; j++) {
+    for (int i = 0; i < (int) Hidden2Size; i++) {
+        for (int j = 0; j < (int) Hidden1Size; j++) {
             auto value = (a.H1ToH2Weights[i][j] + b.H1ToH2Weights[i][j]) / 2;
             //value += dist(gen);
             out.H1ToH2Weights[i][j] = value;
         }
     }
 
-    for (int i = 0; i < OutputSize; i++) {
-        for (int j = 0; j < Hidden2Size; j++) {
+    for (int i = 0; i < (int) OutputSize; i++) {
+        for (int j = 0; j < (int) Hidden2Size; j++) {
             auto value = (a.H2ToOutWeights[i][j] + b.H2ToOutWeights[i][j]) / 2;
             //value += dist(gen);
             out.H2ToOutWeights[i][j] = value;
         }
     }
 
-    for (int i = 0; i < Hidden1Size; i++) {
+    for (int i = 0; i < (int) Hidden1Size; i++) {
         auto value = (a.H1Biases[i] + b.H1Biases[i]) / 2;
         //value += dist(gen);
         out.H1Biases[i] = value;
     }
 
-    for (int i = 0; i < Hidden2Size; i++) {
+    for (int i = 0; i < (int) Hidden2Size; i++) {
         auto value = (a.H2Biases[i] + b.H2Biases[i]) / 2;
         //value += dist(gen);
         out.H2Biases[i] = value;
     }
 
-    for (int i = 0; i < OutputSize; i++) {
+    for (int i = 0; i < (int) OutputSize; i++) {
         auto value = (a.OutBiases[i] + b.OutBiases[i]) / 2;
         //value += dist(gen);
         out.OutBiases[i] = value;
