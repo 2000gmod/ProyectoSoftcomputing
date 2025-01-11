@@ -24,6 +24,8 @@ set(SOURCES
 
 add_executable(scp ${SOURCES})
 
+set_target_properties(scp PROPERTIES UNITY_BUILD ON)
+
 target_link_libraries(scp PRIVATE olcpge)
 target_link_libraries(scp PRIVATE threadpool)
 

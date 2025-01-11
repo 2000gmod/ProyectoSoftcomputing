@@ -30,7 +30,7 @@ FP TrainingSim::DoDronePerformanceSimulation(Drone& drone) {
         Vec2 target {RandomFP(-TrainingMaxCoords, TrainingMaxCoords), RandomFP(-TrainingMaxCoords, TrainingMaxCoords)};
         //Vec2 target;
 
-        FP timeLimit = target.Mag2() / PhysicsSimTargetDroneSpeed + 1.5;
+        FP timeLimit = target.Mag() / PhysicsSimTargetDroneSpeed + 1.5;
 
         if constexpr (TrainingUseRandomInitConditions) {
             drone.AngularVelocity = RandomFP(-1, 1);
@@ -107,8 +107,8 @@ FP TrainingSim::TrainGeneration() {
 
 
     while (Drones.size() < GenerationSize) {
-        auto index1 = geom(gen) % SelectNBest;
-        auto index2 = geom(gen) % SelectNBest;
+        auto index1 = std::min(geom(gen), (int) SelectNBest);
+        auto index2 = std::min(geom(gen), (int) SelectNBest);
 
 
         Drones.emplace_back(ControlNetwork::GenerateChild(mutRate, Drones[index1].Brain, Drones[index2].Brain));
