@@ -106,6 +106,8 @@ bool MainWindow::MenuUpdate(float dt) {
 
 bool MainWindow::ManualControlUpdate(float dt) {
     if (GetKey(olc::ESCAPE).bPressed) {
+        CameraZoom = 0.25;
+        CameraPos = 0;
         State = AppState::Menu;
         return true;
     }
@@ -136,6 +138,8 @@ bool MainWindow::ManualControlUpdate(float dt) {
 
 bool MainWindow::AutomaticControlUpdate(float dt) {
     if (GetKey(olc::ESCAPE).bPressed) {
+        CameraZoom = 0.25;
+        CameraPos = 0;
         State = AppState::Menu;
         return true;
     }
