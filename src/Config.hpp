@@ -21,8 +21,6 @@ constexpr FP DroneThrustChangeSpeed = 8;
 constexpr FP DroneWidth = 0.5;
 constexpr FP DroneHeight = 0.25;
 
-//constexpr FP MutationRate = 1e-3;
-
 constexpr unsigned int GenerationSize = 1000;
 constexpr unsigned int SelectNBest = 50;
 constexpr unsigned int SimulationsPerDrone = 10;
