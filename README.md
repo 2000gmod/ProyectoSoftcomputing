@@ -166,3 +166,12 @@ Se provee un checkpoint precargado con 84444 generaciones como referencia:
 > [checkpoint.gen (drive.google.com)](https://drive.google.com/file/d/1bQ2BK3MERKck8D7KDFiad8daj2UnoN_Z/view?usp=sharing)
 
 Para utilizarlo, pegarlo en el mismo directorio que `scp` y cargarlo en la modalidad de entrenamiento.
+
+
+### `ll::ThreadPool`
+
+Una librería hecha por el autor para facilitar multithreading basado en tareas o tasks. Utilizada para el entrenamiento.
+
+### `olcPixelGameEngine`
+
+[Una librería](https://github.com/OneLoneCoder/olcPixelGameEngine) hecha por OLC para crear gráficos de forma sencilla. Utilizada principalmente por sus primitivas de texto, de sencillo uso y poco boilerplate comparado con OpenGL o Vulkan.
